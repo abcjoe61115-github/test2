@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BLE连接示例</title>
+</head>
+<body>
+    <button id="connectButton">连接到BLE设备</button>
+    <p id="dataDisplay">读取的数据将显示在这里</p>
+
+    <script>
+        const connectButton = document.getElementById("connectButton");
+        const dataDisplay = document.getElementById("dataDisplay");
+
+        let connectedDevice = null;
+
+        connectButton.addEventListener("click", async () => {
+            try {
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: ['49535343-fe7d-4ae5-8fa9-9fafd205e455'] }]
+                });
+
+                const server = await device.gatt.connect();
+
+                // 连接成功后，连接到特定的特征值
+                const service = await server.getPrimaryService('49535343-fe7d-4ae5-8fa9-9fafd205e455');
+                const characteristic = await service.getCharacteristic('49535343-1e4d-4bd9-ba61-23c647249616');
+
+                // 读取特征值的数据
+                const data = await characteristic.readValue();
+
+                // 将数据显示在页面上
+                dataDisplay.textContent = "读取的数据: " + data.buffer;
+                
+                // 存储连接的设备，以便以后操作
+                connectedDevice = device;
+            } catch (error) {
+                console.error("连接失败: " + error);
+            }
+        });
+    </script>
+</body>
+</html>
